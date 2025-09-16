@@ -230,12 +230,13 @@
 
           <div class="footer-actions">
             <button class="btn" id="saveNow">Save</button>
-            <button class="btn secondary" id="downloadCSV">Download CSV</button>
+            <button class="btn secondary" id="downloadCSV">Download PNG</button>
           </div>
         </div>
       </aside>
     </div>
   </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     /***************
@@ -387,8 +388,8 @@
               <div class="sub">#${idx+1}</div>
             </div>
             <div class="toggles">
-              <button class="pill present" data-act="P">${saved[n] === 'P' ? '✓ ' : ''}Present</button>
-              <button class="pill absent" data-act="A">${saved[n] === 'A' ? '✓ ' : ''}Absent</button>
+              <button class="pill present" data-act="P">${saved[n] === 'P' ? '✓ ' : ''}P</button>
+              <button class="pill absent" data-act="A">${saved[n] === 'A' ? '✓ ' : ''}A</button>
             </div>
           `;
           const presentBtn = st.querySelector('.pill.present');
@@ -516,7 +517,7 @@
         presentList.forEach((n,i)=> {
           msg += `${i+1}. ${n}\n`;
         });
-        msg += `\nGenerated with Attendance App`;
+       msg += `\n-- Report prepared by AAYUSH`;
 
         const encoded = encodeURIComponent(msg);
         const url = `https://wa.me/?text=${encoded}`;
@@ -525,22 +526,16 @@
 
       // Download CSV
       downloadCSV.addEventListener('click', ()=>{
-        const cards = Array.from(studentList.querySelectorAll('.student'));
-        if(cards.length === 0){ alert('No students to export.'); return; }
-        const date = attDate.value;
-        const data = loadAttendance(date) || {};
-        let csv = 'Name,Status\n';
-        cards.forEach(card=>{
-          const nm = card.querySelector('.name').textContent.replace(/,/g,' ');
-          const st = data[nm] || '';
-          csv += `${nm},${st}\n`;
-        });
-        const blob = new Blob([csv], {type:'text/csv'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `attendance_${date}.csv`;
-        a.click();
-      });
+  const date = attDate.value;
+  const element = document.querySelector('.container'); // पूरी attendance box
+
+  html2canvas(element).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `attendance_${date}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+});
 
       // helper escape
       function escapeHtml(s){ return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
@@ -583,6 +578,7 @@
   </script>
 </body>
 </html>
+
 
 
 
