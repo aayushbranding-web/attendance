@@ -1,0 +1,585 @@
+﻿<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Attendance Report</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#06b6d4;
+      --muted:#94a3b8;
+      --success:#10b981;
+      --danger:#ef4444;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box;font-family:'Poppins',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,#071025 0%, #071a2b 60%);
+      color:#e6eef6;
+      min-height:100vh;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:28px;
+    }
+
+    .container{
+      width:100%;
+      max-width:1100px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border-radius:14px;
+      padding:22px;
+      box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    header{
+      display:flex;
+      gap:16px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .title{
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    .logo{
+      width:56px;height:56px;border-radius:10px;
+      display:grid;place-items:center;
+      background:linear-gradient(135deg,var(--accent), #60a5fa);
+      font-weight:700;color:#062023;font-size:20px;
+      box-shadow: 0 6px 18px rgba(6,182,212,0.12);
+    }
+    h1{margin:0;font-size:20px;letter-spacing:0.2px;}
+    p.lead{margin:0;color:var(--muted);font-size:13px;}
+
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    input[type="date"]{
+      background:var(--glass);border:1px solid rgba(255,255,255,0.04);
+      color:inherit;padding:8px 10px;border-radius:8px;
+      outline:none;
+    }
+
+    .btn{
+      background:linear-gradient(90deg,var(--accent), #7c3aed);
+      border:none;color:#021219;padding:8px 12px;border-radius:9px;
+      cursor:pointer;font-weight:600;
+      box-shadow: 0 6px 18px rgba(124,58,237,0.12);
+      transition:transform .14s ease,opacity .14s;
+    }
+    .btn.secondary{
+      background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);
+      box-shadow:none;font-weight:600;
+    }
+    .btn:active{transform:translateY(2px);}
+
+    .top-row{
+      display:flex;
+      gap:16px;
+      margin-bottom:18px;
+      align-items:start;
+    }
+
+    .left, .right{
+      padding:12px;border-radius:12px;
+    }
+    .left{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.008));}
+    .right{width:320px;background:linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));}
+
+    label.small{font-size:12px;color:var(--muted);display:block;margin-bottom:6px;}
+    textarea#names{
+      width:100%;min-height:120px;border-radius:10px;padding:10px;background:transparent;
+      color:inherit;border:1px dashed rgba(255,255,255,0.04);resize:vertical;
+    }
+
+    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+    .hint{font-size:12px;color:var(--muted);margin-top:8px;}
+
+    /* Student list */
+    .list{
+      margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px;
+    }
+    .student{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      padding:10px;border-radius:10px;display:flex;align-items:center;gap:10px;
+      border:1px solid rgba(255,255,255,0.02);
+      transition:transform .18s ease, box-shadow .18s;
+      overflow:hidden;
+    }
+    .student:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(2,6,23,0.5);}
+    .avatar{
+      width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#60a5fa, #7c3aed);
+      display:grid;place-items:center;font-weight:700;color:#021219;
+    }
+    .meta{flex:1;min-width:0;}
+    .name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sub{font-size:12px;color:var(--muted);}
+
+    .toggles{display:flex;gap:6px;}
+    .pill{
+      padding:6px 9px;border-radius:999px;border:none;cursor:pointer;font-weight:600;
+      font-size:13px;
+      transition:transform .12s ease, opacity .12s;
+    }
+    .pill.present{background:linear-gradient(90deg,var(--success), #34d399);color:#042017;}
+    .pill.absent{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);}
+    .pill.active{box-shadow:0 8px 18px rgba(2,6,23,0.45);transform:translateY(-2px);}
+
+    .summary{display:flex;flex-direction:column;gap:10px;}
+    .stat{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:9px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02);}
+    .stat strong{font-size:18px;}
+    .stat small{color:var(--muted);}
+
+    .footer-actions{display:flex;gap:8px;margin-top:12px;}
+
+    /* small screens */
+    @media (max-width:860px){
+      .list{grid-template-columns:repeat(1,1fr);}
+      .right{width:100%;}
+      .top-row{flex-direction:column;}
+    }
+
+    /* little fade-in */
+    .fade-in{animation:fadeIn .45s ease both}
+    @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  </style>
+</head>
+<body>
+  <div class="container fade-in" id="app">
+    <header>
+      <div class="title">
+        <div class="logo">AR</div>
+        <div>
+          <h1>Attendance Report</h1>
+          <p class="lead">Simple attendance — click Present (P) or Absent (A). Share via WhatsApp quickly.</p>
+        </div>
+      </div>
+
+      <div class="controls">
+        <input type="date" id="attDate" />
+        <button class="btn" id="loadSample">Load Sample Names</button>
+        <button class="btn secondary" id="clearData">Clear Today's</button>
+        <button class="btn" id="waShare">Share via WhatsApp</button>
+      </div>
+    </header>
+
+    <div class="top-row">
+      <div class="left">
+        <label class="small">Students (one per line) — up to 40</label>
+        <textarea id="names" placeholder="Paste names here..."></textarea>
+        <div class="actions">
+          <button class="btn" id="generate">Generate List</button>
+          <button class="btn secondary" id="applyDropdown">Enable P/A dropdowns</button>
+          <div style="flex:1"></div>
+          <div class="hint">Tip: You can paste all names and click Generate. Present saves automatically.</div>
+        </div>
+
+        <div class="list" id="studentList" aria-live="polite" style="margin-top:14px;">
+          <!-- Student cards injected here -->
+        </div>
+      </div>
+
+      <aside class="right">
+        <div class="summary">
+          <div class="stat">
+            <div>
+              <small>Date</small>
+              <div id="showDate" style="font-weight:700"></div>
+            </div>
+            <div>
+              <small>Total</small>
+              <div id="totalCount">0</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <small>Present</small>
+              <div id="presentCount" style="font-weight:700;color:var(--success)">0</div>
+            </div>
+            <div>
+              <small>Absent</small>
+              <div id="absentCount" style="font-weight:700;color:var(--danger)">0</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <small>Auto-save</small>
+              <div id="savedStatus">Not saved</div>
+            </div>
+            <div>
+              <small>Students shown</small>
+              <div id="shownCount">0</div>
+            </div>
+          </div>
+
+          <div class="footer-actions">
+            <button class="btn" id="saveNow">Save</button>
+            <button class="btn secondary" id="downloadCSV">Download CSV</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    /***************
+      Attendance App JS
+    ****************/
+    (function(){
+      const MAX = 40;
+      const namesTextarea = document.getElementById('names');
+      const generateBtn = document.getElementById('generate');
+      const studentList = document.getElementById('studentList');
+      const attDate = document.getElementById('attDate');
+      const showDate = document.getElementById('showDate');
+      const totalCountEl = document.getElementById('totalCount');
+      const presentCountEl = document.getElementById('presentCount');
+      const absentCountEl = document.getElementById('absentCount');
+      const savedStatus = document.getElementById('savedStatus');
+      const shownCount = document.getElementById('shownCount');
+      const loadSample = document.getElementById('loadSample');
+      const clearData = document.getElementById('clearData');
+      const saveNow = document.getElementById('saveNow');
+      const waShare = document.getElementById('waShare');
+      const downloadCSV = document.getElementById('downloadCSV');
+
+      // set date to today by default
+      function toInputDate(d = new Date()){
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      attDate.value = toInputDate();
+      showDate.textContent = formatDisplayDate(attDate.value);
+
+      attDate.addEventListener('change', ()=> {
+        showDate.textContent = formatDisplayDate(attDate.value);
+        loadAttendanceForDate();
+      });
+
+      function formatDisplayDate(iso){
+        try{
+          const d = new Date(iso);
+          return d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+        }catch(e){return iso}
+      }
+
+      // your provided student names (40)
+      const sampleNames = [
+"AAYUSH",
+"ABHIJEET",
+"ABHINAV",
+"AMAR",
+"ANAS",
+"ANSH",
+"ANUSHREE",
+"ARCHITA",
+"ARYAN",
+"DILIP",
+"HAMJA",
+"HARISH",
+"HARSHIT",
+"JOY",
+"KARAN",
+"KHUSHAL",
+"KRISHNESH",
+"LAKSHYA",
+"MALI SAGAR",
+"MANNAT",
+"MITANSHU",
+"NANDNI",
+"PARVATI",
+"PIYUSH",
+"RAJESH KUMAR",
+"RITIK",
+"RUPENDER",
+"SACHIN",
+"SADIYA",
+"SANIYA",
+"SAJANA",
+"SUMIT",
+"SWETA",
+"TAKSH",
+"TUNUJ",
+"URVASHI",
+"VATSAL",
+"VIREN",
+"YUVRAJ",
+"ZIYA"
+      ];
+
+      // prefill textarea with provided names
+      namesTextarea.value = sampleNames.slice(0, MAX).join("\n");
+
+      loadSample.addEventListener('click', ()=>{
+        namesTextarea.value = sampleNames.slice(0, MAX).join("\n");
+        generateListFromTextarea();
+      });
+
+      // Save / load helpers
+      function storageKey(dateStr){
+        return 'attendance_' + dateStr;
+      }
+
+      function saveAttendance(dateStr, data){
+        localStorage.setItem(storageKey(dateStr), JSON.stringify(data));
+        savedStatus.textContent = 'Saved ' + new Date().toLocaleTimeString();
+      }
+      function loadAttendance(dateStr){
+        const raw = localStorage.getItem(storageKey(dateStr));
+        if(!raw) return null;
+        try { return JSON.parse(raw); } catch(e){ return null; }
+      }
+      function clearAttendance(dateStr){
+        localStorage.removeItem(storageKey(dateStr));
+        savedStatus.textContent = 'Cleared';
+      }
+
+      // generate student cards
+      function generateListFromTextarea(){
+        const raw = namesTextarea.value.trim();
+        if(!raw){
+          alert('Please paste names (one per line) or click "Load Sample Names".');
+          return;
+        }
+        const lines = raw.split(/\r?\n/).map(s=>s.trim()).filter(s=>s);
+        const names = lines.slice(0, MAX);
+        renderStudents(names);
+        // save initial empty states if not present
+        const existing = loadAttendance(attDate.value) || {};
+        // ensure keys exist so counts work
+        const initial = Object.assign({}, existing);
+        names.forEach(n=>{ if(typeof initial[n] === 'undefined') initial[n] = ''; });
+        saveAttendance(attDate.value, initial);
+      }
+
+      generateBtn.addEventListener('click', generateListFromTextarea);
+
+      // render students and load saved states for date
+      function renderStudents(names){
+        studentList.innerHTML = '';
+        const date = attDate.value;
+        const saved = loadAttendance(date) || {};
+        names.forEach((n, idx) => {
+          const st = document.createElement('div');
+          st.className = 'student fade-in';
+          st.innerHTML = `
+            <div class="avatar">${(n[0]||'').toUpperCase()}</div>
+            <div class="meta">
+              <div class="name" title="${escapeHtml(n)}">${escapeHtml(n)}</div>
+              <div class="sub">#${idx+1}</div>
+            </div>
+            <div class="toggles">
+              <button class="pill present" data-act="P">${saved[n] === 'P' ? '✓ ' : ''}Present</button>
+              <button class="pill absent" data-act="A">${saved[n] === 'A' ? '✓ ' : ''}Absent</button>
+            </div>
+          `;
+          const presentBtn = st.querySelector('.pill.present');
+          const absentBtn = st.querySelector('.pill.absent');
+
+          if(saved[n] === 'P'){ presentBtn.classList.add('active'); absentBtn.classList.remove('active'); }
+          if(saved[n] === 'A'){ absentBtn.classList.add('active'); presentBtn.classList.remove('active'); }
+
+          studentList.appendChild(st);
+        });
+
+        // update counters
+        updateCounts();
+        shownCount.textContent = names.length;
+      }
+
+      // mark attendance handler (uses event delegation below)
+      function markAttendance(nameKey, status){
+        const date = attDate.value;
+        const data = loadAttendance(date) || {};
+        data[nameKey] = status;
+        saveAttendance(date, data);
+
+        // update UI for that card
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        for(const card of cards){
+          const nm = card.querySelector('.name').textContent;
+          if(nm === nameKey){
+            const p = card.querySelector('.pill.present');
+            const a = card.querySelector('.pill.absent');
+            if(status === 'P'){ p.classList.add('active'); a.classList.remove('active'); }
+            else { a.classList.add('active'); p.classList.remove('active'); }
+            break;
+          }
+        }
+        updateCounts();
+      }
+
+      // update counters
+      function updateCounts(){
+        const date = attDate.value;
+        const data = loadAttendance(date) || {};
+        let present = 0, absent = 0;
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        const total = cards.length;
+        cards.forEach(card=>{
+          const nm = card.querySelector('.name').textContent;
+          const val = data[nm];
+          if(val === 'P') present++;
+          else if(val === 'A') absent++;
+        });
+
+        totalCountEl.textContent = total;
+        presentCountEl.textContent = present;
+        absentCountEl.textContent = absent;
+      }
+
+      // load attendance for current date (if saved)
+      function loadAttendanceForDate(){
+        const date = attDate.value;
+        const saved = loadAttendance(date);
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        if(cards.length && saved){
+          cards.forEach(card=>{
+            const nm = card.querySelector('.name').textContent;
+            const presentBtn = card.querySelector('.pill.present');
+            const absentBtn = card.querySelector('.pill.absent');
+            if(saved[nm] === 'P'){ presentBtn.classList.add('active'); absentBtn.classList.remove('active'); }
+            else if(saved[nm] === 'A'){ absentBtn.classList.add('active'); presentBtn.classList.remove('active'); }
+            else { presentBtn.classList.remove('active'); absentBtn.classList.remove('active'); }
+          });
+        }
+        updateCounts();
+        if(saved) savedStatus.textContent = 'Loaded saved data';
+        else savedStatus.textContent = 'No saved data';
+      }
+
+      // Clear today's saved
+      clearData.addEventListener('click', ()=>{
+        if(confirm('Clear attendance data for ' + formatDisplayDate(attDate.value) + '?')) {
+          clearAttendance(attDate.value);
+          studentList.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+          updateCounts();
+        }
+      });
+
+      // Save Now
+      saveNow.addEventListener('click', ()=>{
+        const date = attDate.value;
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        const out = {};
+        cards.forEach(card=>{
+          const nm = card.querySelector('.name').textContent;
+          const present = card.querySelector('.pill.present').classList.contains('active');
+          const absent = card.querySelector('.pill.absent').classList.contains('active');
+          if(present) out[nm] = 'P';
+          else if(absent) out[nm] = 'A';
+          else out[nm] = '';
+        });
+        saveAttendance(date, out);
+        savedStatus.textContent = 'Saved manually ' + new Date().toLocaleTimeString();
+      });
+
+      // Share via WhatsApp
+      waShare.addEventListener('click', ()=>{
+        const date = attDate.value;
+        const displayDate = formatDisplayDate(date);
+        const data = loadAttendance(date) || {};
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        if(cards.length === 0){
+          alert('No students listed. Paste names and click Generate first.');
+          return;
+        }
+        const presentList = [];
+        cards.forEach((card, idx) => {
+          const nm = card.querySelector('.name').textContent;
+          if(data[nm] === 'P') presentList.push(nm);
+        });
+
+        const total = cards.length;
+        const presentCount = presentList.length;
+
+        let msg = `Attendance Report - ${displayDate}\n`;
+        msg += `Present (${presentCount}/${total}):\n`;
+        presentList.forEach((n,i)=> {
+          msg += `${i+1}. ${n}\n`;
+        });
+        msg += `\nGenerated with Attendance App`;
+
+        const encoded = encodeURIComponent(msg);
+        const url = `https://wa.me/?text=${encoded}`;
+        window.open(url, '_blank');
+      });
+
+      // Download CSV
+      downloadCSV.addEventListener('click', ()=>{
+        const cards = Array.from(studentList.querySelectorAll('.student'));
+        if(cards.length === 0){ alert('No students to export.'); return; }
+        const date = attDate.value;
+        const data = loadAttendance(date) || {};
+        let csv = 'Name,Status\n';
+        cards.forEach(card=>{
+          const nm = card.querySelector('.name').textContent.replace(/,/g,' ');
+          const st = data[nm] || '';
+          csv += `${nm},${st}\n`;
+        });
+        const blob = new Blob([csv], {type:'text/csv'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `attendance_${date}.csv`;
+        a.click();
+      });
+
+      // helper escape
+      function escapeHtml(s){ return (s+'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+      // init
+      function init(){
+        // render on load if names present
+        if(namesTextarea.value.trim()){
+          generateListFromTextarea();
+        }
+
+        // delegate clicks on present/absent buttons
+        studentList.addEventListener('click', (e)=>{
+          const btn = e.target.closest('.pill');
+          if(!btn) return;
+          const card = btn.closest('.student');
+          const nm = card.querySelector('.name').textContent;
+          const status = btn.dataset.act; // 'P' or 'A'
+          markAttendance(nm, status);
+        });
+
+        // cache names
+        namesTextarea.addEventListener('input', ()=>{
+          localStorage.setItem('attendance_names', namesTextarea.value);
+        });
+
+        // allow Ctrl+Enter generate
+        namesTextarea.addEventListener('keydown', (ev)=>{
+          if((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter'){
+            generateBtn.click();
+          }
+        });
+
+        // load saved for today if exists
+        loadAttendanceForDate();
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
